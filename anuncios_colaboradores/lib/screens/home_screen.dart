@@ -4,134 +4,148 @@ import 'package:anuncios_colaboradores/widgets/anuncio_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  
+  
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+  
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int paginaAtual = 0;
+  
 
   
   final List<String> categorias = ['Todos', 'Automoveis', 'Eletrónicos'];
-  String categoriaSelecionada = 'Todos';
+   String categoriaSelecionada = 'Todos';
+
   final TextEditingController searchController = TextEditingController();
   String termoBusca = '';
 
+  List<Map<String, dynamic>> anunciosFiltrados = [];
+  List<Map<String, dynamic>> anunciosVisiveis = [];
+  int itensPorPagina = 5;
+
+  @override
+  void initState(){
+    super.initState();
+    _atualizarLista();
+  }
+
+  void _atualizarLista(){
+    final lista = anunciosMock.where((anuncio){
+      final correspondeCategoria=
+      categoriaSelecionada == 'Todos' || anuncio ['tipo'] ==categoriaSelecionada;
+      final correspondeBusca = anuncio ['titulo'].toLowerCase().contains(termoBusca.toLowerCase());
+      return correspondeCategoria && correspondeBusca;
+    }).toList();
+
+    setState(() {
+      anunciosFiltrados = lista;
+      anunciosVisiveis = lista.take(itensPorPagina).toList();
+    });
+    
+  }
+
+  void _carregarMais(){
+    final totalVisiveis = anunciosVisiveis.length;
+    final novosItens = anunciosFiltrados.skip(totalVisiveis).take(itensPorPagina).toList();
+
+    setState(() {
+      anunciosVisiveis.addAll(novosItens);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget corpo;
-
+  return Scaffold(
+  appBar: AppBar(
+  title: const Text("Buscador de anúncios"),
+  backgroundColor: const Color.fromARGB(255, 168, 121, 104), foregroundColor: Colors.white,// buscador de anuncio, cor do fundo e letra
+  ),
+  body: Column(
     
-    if (paginaAtual == 0) {
-      final anunciosFiltrados = anunciosMock.where((anuncio) {
-        final correspondeCategoria = categoriaSelecionada == 'Todos' ||
-            anuncio['tipo'] == categoriaSelecionada;
-        final correspondeBusca = anuncio['titulo']
-            .toLowerCase()
-            .contains(termoBusca.toLowerCase());
-        return correspondeCategoria && correspondeBusca;
-      }).toList();
-
-      corpo = Column(
-        children: [
+  children: [
           
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: categorias.map((categoria) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    label: Text(categoria),
-                    selected: categoriaSelecionada == categoria,
-                    onSelected: (_) {
-                      setState(() {
-                        categoriaSelecionada = categoria;
-                      });
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
+      SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(8),
+      child: Row(  
+      children: categorias.map((categoria) {
+      return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ChoiceChip(
+      label: Text(categoria),
+      selected: categoriaSelecionada == categoria,
+      onSelected: (_) {
+        setState(() {
+        categoriaSelecionada = categoria;
+        });
+          _atualizarLista();
+           },
           ),
+         );
+         }).toList(),
+         ),
+         ),
+
           
-          Padding(   // aqui é a Barra de busca
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            
             child: TextField(
+              
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Buscar',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  
                 ),
               ),
               onChanged: (value) {
-                setState(() {
-                  termoBusca = value;
-                });
+                termoBusca = value;
+                _atualizarLista();
               },
             ),
           ),
-          
-          Expanded(   // aquui é a Lista de anúncios
-            child: ListView.builder(
-              itemCount: anunciosFiltrados.length,
-              itemBuilder: (context, index) {
-                return AnuncioCard(anuncio: anunciosFiltrados[index]);
-              },
-            ),
-          ),
-        ],
-      );
-    } else {
-      
-      corpo = Center(
-        child: Text(
-          ['Início', 'Carrinho', 'Buscar', 'Favoritos', 'Perfil'][paginaAtual],
-          style: const TextStyle(fontSize: 24),
-        ),
-      );
-    }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Buscador de anúncios"),
-      ),
-      body: corpo,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: paginaAtual,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() {
-            paginaAtual = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Carrinho',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Buscar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favoritos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+          
+          Expanded(
+            
+            child: ListView.builder(
+            itemCount: anunciosVisiveis.length + 1,
+            itemBuilder: (context, index) {
+            if (index < anunciosVisiveis.length) {
+           return AnuncioCard(anuncio: anunciosVisiveis[index]);
+            } else {
+           final temMais = anunciosVisiveis.length < anunciosFiltrados.length;
+
+            return temMais
+
+           ? Padding(
+            
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor:const Color.fromARGB(255, 168, 121, 104),foregroundColor: Colors.white ) ,// cor e letra do botao
+            onPressed: _carregarMais,
+            child: const Text('Ver mais') ,
+              ),
+                )
+                 :const SizedBox.shrink();
+                }
+              },
+            ),
           ),
         ],
       ),
     );
+  
+
+      
   }
+
+    
 }

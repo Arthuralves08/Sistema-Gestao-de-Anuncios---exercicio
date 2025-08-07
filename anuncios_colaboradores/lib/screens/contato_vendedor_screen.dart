@@ -1,4 +1,4 @@
-import 'dart:ui';
+
 
 import 'package:flutter/material.dart';
 
@@ -26,8 +26,10 @@ class _ContatoVendedorScreenState extends State<ContatoVendedorScreen>{
   Widget build (BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Detalhe"),
-        leading: IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back),
+        backgroundColor: const Color.fromARGB(255, 168, 121, 104),// cor do fundo deatlhe
+        foregroundColor: Colors.white,// cor do letra
+        title: const Text("Detalhe"),//nome do botao
+        leading: IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back),//ação do botao ao ser precionado(volta pra tela)
         ),
       ),
 
@@ -39,8 +41,10 @@ class _ContatoVendedorScreenState extends State<ContatoVendedorScreen>{
         ),
         const SizedBox(height: 8,),
         Text( widget.nomeVendedor, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+        
         ),
         const SizedBox(height: 16,),
+        
 
 
         Row(children: [  //aqui é o telefone
@@ -55,11 +59,12 @@ const SizedBox(height: 16),
       Form( //aqui é o Formulário
            key: _formKey,
            child: Column(
+            
            children: [
           TextFormField(
             controller: nomeController,
             decoration: const InputDecoration(
-            labelText: "Nombre",
+            labelText: "Nome",
                border: OutlineInputBorder(),
                ),
                 maxLength: 50,
@@ -77,7 +82,7 @@ const SizedBox(height: 16),
                   TextFormField(
                   controller: emailController,
                   decoration: const InputDecoration(
-                    labelText: "Correo Contacto",
+                    labelText: "e-mail",
                     border: OutlineInputBorder(),
 
                     ),
@@ -99,7 +104,7 @@ const SizedBox(height: 16),
                     maxLines: 3,
                     maxLength: 100,
                     decoration: const InputDecoration(
-                    labelText: "Texto Correo",
+                    labelText: "mensagem",
                     border: OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -118,17 +123,27 @@ const SizedBox(height: 16),
             const SizedBox(height: 20),
 
 
-            SizedBox(             //aqui é o  Botão Enviar
+            SizedBox(   
+              
+                       //aqui é o  Botão Enviar
               width: double.infinity,
+              
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor:const Color.fromARGB(255, 168, 121, 104), foregroundColor: Colors.white),// editei a cor do fundo e cor do texto do botao
                 onPressed: () {
+                  
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Correo enviado com sucesso!")),
+                      const SnackBar(content: Text("e-mail enviado com sucesso!"), backgroundColor: const Color.fromARGB(255, 168, 121, 104)),
+                      //botao de enviar correio, texto e cor
                     );
+                    
                   }
+                  
                 },
-                child: const Text("Enviar Correo"),
+                child: const Text("Enviar E-mail"),
+                
+                
               ),
             ),
           ],
